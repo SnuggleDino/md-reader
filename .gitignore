@@ -1,0 +1,15 @@
+# Go Build-Ausgabe
+MD-Reader.exe
+md-reader
+
+# Wails Build-Ordner
+build/bin/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Lokale Configs
+*.env
+.DS_Store
+Thumbs.db

@@ -46,8 +46,7 @@
 
 ## Screenshots
 
-> _Add your screenshots here after building the app._  
-> Recommended: one dark mode overview + one code block example.
+
 
 ---
 

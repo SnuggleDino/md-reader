@@ -29,7 +29,7 @@ declare global {
 type Theme = 'dark' | 'system';
 type Lang  = 'de' | 'en';
 
-// ── Vollständige Übersetzungen ────────────────────────────────────
+// ── DEUTSCH / GERMAN ────────────────────────────────────
 const i18n: Record<Lang, Record<string, string>> = {
   de: {
     // App
@@ -67,6 +67,8 @@ const i18n: Record<Lang, Record<string, string>> = {
     fileError:        'Fehler beim Laden der Datei: ',
     linkError:        'Fehler beim Laden des Links: ',
   },
+
+// ── ENGLISH ─────────────────────────────────────────────────────
   en: {
     // App
     appName:          'MD-Reader',
@@ -76,30 +78,30 @@ const i18n: Record<Lang, Record<string, string>> = {
     sidebarToggle:    'Toggle sidebar',
     goBack:           'Back',
     goForward:        'Forward',
-    // Suche
+    // Search
     search:           'Search…',
     // Theme
     themeDark:        'Dark',
     themeSystem:      'System',
-    // Sprache
+    // Language
     langDE:           'Deutsch',
     langEN:           'English',
-    // Modal — externer Link
+    // Modal — external Link
     externalLink:     'External link',
     leavingApp:       'You are leaving the app and opening this link in your browser.',
     openLink:         'Open in browser',
-    // Modal — Markdown laden
+    // Modal — load Markdown
     loadMarkdown:     'Load Markdown file?',
     loadQuestion:     'Would you like to load this Markdown file?',
     loadFile:         'Load',
-    // Modal — allgemein
+    // Modal — general
     cancel:           'Cancel',
-    // Lade-Indikator
+    // Load-Indikator
     loading:          'Loading…',
-    // Leerer Zustand
+    // Empty State
     noContent:        'No file open',
     dropHint:         'Drop a file here or',
-    // Fehlermeldungen
+    // Error messages
     fileError:        'Error loading file: ',
     linkError:        'Error loading link: ',
   },
@@ -126,7 +128,7 @@ const App: React.FC = () => {
 
   const contentRef     = useRef<HTMLDivElement>(null);
   const searchRef      = useRef<HTMLInputElement>(null);
-  const langRef        = useRef<Lang>(lang); // aktueller lang-Wert für Callbacks
+  const langRef        = useRef<Lang>(lang);
 
   const [scrollPositions, setScrollPositions] = useState<Record<string, number>>({});
   const [history,      setHistory]      = useState<string[]>([]);
@@ -136,26 +138,23 @@ const App: React.FC = () => {
   const [modalType,    setModalType]    = useState<'none' | 'external' | 'md-link'>('none');
   const [pendingUrl,   setPendingUrl]   = useState<string>('');
 
-  // t() liest immer den aktuellen lang-Wert — kein Stale-Closure-Problem
   const t = useCallback((key: string) => i18n[lang][key] ?? key, [lang]);
 
-  // langRef immer aktuell halten (für Callbacks, die lang nicht in deps haben)
   useEffect(() => { langRef.current = lang; }, [lang]);
 
   // ── Theme ─────────────────────────────────────────────────────
   useEffect(() => {
-    // Immer dark — Light-Modus existiert nicht mehr
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add('dark');
     localStorage.setItem('md-reader-theme', theme);
   }, [theme]);
 
-  // ── Sprache speichern ─────────────────────────────────────────
+  // ── Language save ─────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem('md-reader-lang', lang);
   }, [lang]);
 
-  // ── Scroll-Helfer ─────────────────────────────────────────────
+  // ── Scroll-Helper ─────────────────────────────────────────────
   const saveCurrentScroll = useCallback(() => {
     if (contentRef.current && filePath)
       setScrollPositions(prev => ({ ...prev, [filePath]: contentRef.current?.scrollTop || 0 }));
@@ -168,7 +167,7 @@ const App: React.FC = () => {
     }, 200);
   }, [scrollPositions]);
 
-  // ── Datei laden ───────────────────────────────────────────────
+  // ── Load File ───────────────────────────────────────────────
   const loadFile = useCallback(async (path: string, addToHistory = true) => {
     if (!path || !window.go?.main?.App) return;
     saveCurrentScroll();
@@ -189,7 +188,6 @@ const App: React.FC = () => {
       restoreScroll(path);
       document.title = `MD-Reader — ${path.split(/[/\\]/).pop()}`;
     } catch (err: any) {
-      // langRef.current damit die Fehlermeldung immer in der aktuellen Sprache ist
       setError(i18n[langRef.current]['fileError'] + err.toString());
     } finally {
       setLoading(false);
@@ -303,7 +301,6 @@ const App: React.FC = () => {
     return () => clearInterval(checkWails);
   }, []);
 
-  // ── Suche — Ctrl+F / Cmd+F ────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
@@ -320,7 +317,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Renderer ────────────────────────────────────────────────────
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100vh',
@@ -365,7 +362,6 @@ const App: React.FC = () => {
               </h3>
             </div>
 
-            {/* Beschreibungstext */}
             <p style={{
               margin: '0 0 .75rem',
               color: 'var(--text-secondary)',
@@ -374,7 +370,6 @@ const App: React.FC = () => {
               {modalType === 'external' ? t('leavingApp') : t('loadQuestion')}
             </p>
 
-            {/* URL-Anzeige */}
             <p style={{
               margin: '0 0 1.5rem',
               padding: '8px 12px',
@@ -424,7 +419,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* ── Header — 3-Spalten: [Links] [Mitte] [Rechts] ─────── */}
       <header style={{
         display: 'grid',
         gridTemplateColumns: '1fr auto 1fr',
@@ -439,7 +433,7 @@ const App: React.FC = () => {
         userSelect: 'none',
       }}>
 
-        {/* ── Links ───────────────────────────────────────────── */}
+        {/* ── Left ───────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
 
           {/* Sidebar-Toggle */}
@@ -457,7 +451,6 @@ const App: React.FC = () => {
             <Menu size={17} />
           </button>
 
-          {/* Zurück / Vor */}
           <div style={{
             display: 'flex', background: 'var(--bg-subtle)',
             borderRadius: '8px', padding: '2px', gap: '1px', flexShrink: 0,
@@ -478,7 +471,6 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          {/* Datei öffnen */}
           {wailsReady && (
             <button
               onClick={async () => {
@@ -500,7 +492,6 @@ const App: React.FC = () => {
             </button>
           )}
 
-          {/* Dateiname-Pill */}
           {filePath && (
             <>
               <div style={{
@@ -552,7 +543,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* ── Mitte: Suchfeld ─────────────────────────────────── */}
+        {/* ── Mid: Search ─────────────────────────────────── */}
         <div style={{ position: 'relative', width: '260px' }}>
           <div style={{
             position: 'absolute', left: '10px', top: '50%',
@@ -605,13 +596,11 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* ── Rechts: Sprache + Theme ──────────────────────────── */}
+        {/* ── Right: Language + Theme ──────────────────────────── */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
           justifyContent: 'flex-end',
         }}>
-
-          {/* Sprach-Switcher */}
           <div style={{
             display: 'flex', background: 'var(--bg-subtle)',
             borderRadius: '8px', padding: '2px', gap: '1px',
@@ -698,7 +687,6 @@ const App: React.FC = () => {
             padding: '0 0 4rem',
           }}
         >
-          {/* Fehlermeldung — dunkelmodusfähig */}
           {error && (
             <div style={{
               margin: '1.5rem', padding: '12px 16px',
@@ -712,7 +700,6 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {/* Lade-Spinner */}
           {loading ? (
             <div style={{
               display: 'flex', flexDirection: 'column',
@@ -730,7 +717,6 @@ const App: React.FC = () => {
               </span>
             </div>
 
-          /* Leerer Zustand */
           ) : !markdown ? (
             <div style={{
               display: 'flex', flexDirection: 'column',
@@ -764,8 +750,6 @@ const App: React.FC = () => {
                 </span>
               </p>
             </div>
-
-          /* Markdown-Inhalt */
           ) : (
             <MarkdownViewer content={markdown} onLinkClick={handleLinkClick} />
           )}

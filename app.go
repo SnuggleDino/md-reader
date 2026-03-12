@@ -2,44 +2,55 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/sqweek/dialog"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
+// example.md wird ins Binary eingebettet
+//go:embed example.md
+var exampleMarkdown string
+
 type App struct {
 	ctx context.Context
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// OpenExternalLink öffnet eine URL im Standardbrowser
 func (a *App) OpenExternalLink(url string) {
 	runtime.BrowserOpenURL(a.ctx, url)
 }
 
-// DownloadAndLoadMd lädt Markdown von einer URL
 func (a *App) DownloadAndLoadMd(url string) (string, error) {
-	resp, err := http.Get(url)
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return "", err
 	}
+
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("download failed: %s", resp.Status)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -49,72 +60,115 @@ func (a *App) DownloadAndLoadMd(url string) (string, error) {
 	return string(body), nil
 }
 
-// LoadRelativeMdFile löst relative Pfade auf und lädt die Datei
 func (a *App) LoadRelativeMdFile(currentPath string, relativePath string) (map[string]string, error) {
-	// 1. Verzeichnis der aktuellen Datei ermitteln
+
 	dir := filepath.Dir(currentPath)
-	
-	// 2. Absoluten Pfad zur neuen Datei bauen
+
 	fullPath := filepath.Join(dir, relativePath)
+
 	absPath, err := filepath.Abs(fullPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3. Prüfung ob .md
-	if !strings.HasSuffix(strings.ToLower(absPath), ".md") {
-		return nil, fmt.Errorf("nur .md Dateien erlaubt")
+	if filepath.Ext(strings.ToLower(absPath)) != ".md" {
+		return nil, fmt.Errorf("only .md files allowed")
 	}
 
-	// 4. Datei lesen
 	content, err := os.ReadFile(absPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Resultat als Map für einfaches Handling im Frontend
-	result := make(map[string]string)
-	result["content"] = string(content)
-	result["path"] = absPath
-
-	return result, nil
+	return map[string]string{
+		"content": string(content),
+		"path":    absPath,
+	}, nil
 }
 
-// OpenFileDialog öffnet den nativen Windows-Dateidialog
 func (a *App) OpenFileDialog() string {
+
 	filename, err := dialog.File().
 		Filter("Markdown Dateien", "md").
 		Title("MD-Datei auswählen").
 		Load()
+
 	if err != nil {
 		return ""
 	}
+
 	return filename
 }
 
-// LoadMarkdownFile liest den Inhalt einer .md Datei ein
 func (a *App) LoadMarkdownFile(path string) (string, error) {
+
 	if path == "" {
-		return "", fmt.Errorf("kein Pfad angegeben")
+		return "", fmt.Errorf("no path provided")
+	}
+
+	if filepath.Ext(strings.ToLower(path)) != ".md" {
+		return "", fmt.Errorf("only markdown files allowed")
 	}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return "", fmt.Errorf("konnte Datei nicht lesen: %w", err)
+		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
 	return string(content), nil
 }
 
-// GetStartupFile prüft os.Args
 func (a *App) GetStartupFile() string {
+
 	if len(os.Args) > 1 {
-		return os.Args[1]
+
+		path := os.Args[1]
+
+		if filepath.Ext(strings.ToLower(path)) == ".md" {
+			return path
+		}
 	}
+
 	return ""
 }
 
-// GetExampleMarkdown gibt einen Standard-String zurück
 func (a *App) GetExampleMarkdown() string {
-	return "# Willkommen bei MD-Reader\n\n### Sektor: Start\nZiehe eine .md Datei hierher oder nutze den Button oben.\n\n- **Feature 1:** Sektoren-Karten\n- **Feature 2:** Dark Mode\n- **Feature 3:** Inhaltsverzeichnis\n- **Feature 4:** Relative Links ([Beispiel](./example.md))"
+
+	if exampleMarkdown != "" {
+		return exampleMarkdown
+	}
+
+	return `
+# MD Reader
+
+---
+
+## Sector: EN
+
+### Welcome to MD Reader
+
+Drag a .md file here or use the button above.
+
+#### Features
+
+- Sector Maps
+- Dark Mode
+- Table of Contents
+- Relative Links ([Example](./example.md))
+
+---
+
+## Sektor: DE
+
+### Willkommen beim MD Reader
+
+Ziehe eine .md Datei hierher oder nutze den Button oben.
+
+#### Funktionen
+
+- Sektoren-Karten
+- Dark Mode
+- Inhaltsverzeichnis
+- Relative Links ([Beispiel](./example.md))
+`
 }

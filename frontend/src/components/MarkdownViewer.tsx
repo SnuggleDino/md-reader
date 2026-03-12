@@ -10,7 +10,7 @@ interface MarkdownViewerProps {
   onLinkClick: (href: string) => void;
 }
 
-// ── Copy-Button für Code-Blöcke ───────────────────────────────────
+// Copy button for code blocks
 const CopyButton: React.FC<{ code: string }> = ({ code }) => {
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
@@ -22,7 +22,7 @@ const CopyButton: React.FC<{ code: string }> = ({ code }) => {
   return (
     <button
       onClick={handleCopy}
-      title="Kopieren"
+      title="Copy"
       style={{
         display: 'flex', alignItems: 'center', gap: '4px',
         padding: '3px 10px', borderRadius: '6px', border: 'none',
@@ -34,7 +34,7 @@ const CopyButton: React.FC<{ code: string }> = ({ code }) => {
       }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
-      {copied ? 'Kopiert' : 'Kopieren'}
+      {copied ? 'Copied' : 'Copy'}
     </button>
   );
 };
@@ -49,13 +49,12 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick })
         remarkPlugins={[remarkGfm]}
         components={{
 
-          // ── Paragraphen ─────────────────────────────────────────────
-          // WICHTIG: <p> statt <div> — verhindert invalides DOM-Nesting
+          // ── Paragraphs ──────────────────────────────────────────────────
           p: ({ children }) => (
             <p style={{ marginBottom: '1.1rem', lineHeight: 1.75 }}>{children}</p>
           ),
 
-          // ── Überschriften ────────────────────────────────────────────
+          // ── Headings ────────────────────────────────────────────────────
           h1: ({ children }) => (
             <h1 id={generateId(children)} className="md-prose">{children}</h1>
           ),
@@ -77,12 +76,12 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick })
             <h4 id={generateId(children)} className="md-prose">{children}</h4>
           ),
 
-          // ── Listen ───────────────────────────────────────────────────
+          // ── Lists ────────────────────────────────────────────────────────
           ul: ({ children }) => <ul className="md-prose">{children}</ul>,
           ol: ({ children }) => <ol className="md-prose">{children}</ol>,
           li: ({ children }) => <li>{children}</li>,
 
-          // ── Code ─────────────────────────────────────────────────────
+          // ── Code ─────────────────────────────────────────────────────────
           code({ node, inline, className, children }: any) {
             const match = /language-(\w+)/.exec(className || '');
             const codeString = String(children).replace(/\n$/, '');
@@ -114,12 +113,10 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick })
                 </div>
               );
             }
-
-            // Inline-Code
             return <code className="md-prose-code-inline">{children}</code>;
           },
 
-          // ── Links ────────────────────────────────────────────────────
+          // ── Links ────────────────────────────────────────────────────────
           a: ({ children, href }) => (
             <a
               href={href}
@@ -134,12 +131,12 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick })
             </a>
           ),
 
-          // ── Blockquote ───────────────────────────────────────────────
+          // ── Blockquote ───────────────────────────────────────────────────
           blockquote: ({ children }) => (
             <blockquote className="md-prose">{children}</blockquote>
           ),
 
-          // ── Tabellen ─────────────────────────────────────────────────
+          // ── Tables ───────────────────────────────────────────────────────
           table: ({ children }) => (
             <div className="md-prose-table-wrap">
               <table className="md-prose">{children}</table>
@@ -148,25 +145,42 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick })
           th: ({ children }) => <th className="md-prose">{children}</th>,
           td: ({ children }) => <td className="md-prose">{children}</td>,
 
-          // ── HR ───────────────────────────────────────────────────────
+          // ── Horizontal Rule ───────────────────────────────────────────────
           hr: () => <hr className="md-prose" />,
 
-          // ── Bilder ───────────────────────────────────────────────────
+          // ── Images ───────────────────────────────────────────────────────
           img: ({ src, alt }) => (
-            <figure style={{ margin: '2rem 0', textAlign: 'center' }}>
-              <img src={src} alt={alt} className="md-prose" style={{ display: 'inline-block' }} />
+            <span style={{
+              display: 'block',
+              margin: '2rem 0',
+              textAlign: 'center',
+            }}>
+              <img
+                src={src}
+                alt={alt}
+                style={{
+                  maxWidth: '100%', height: 'auto',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: 'var(--shadow-md)',
+                  border: '1px solid var(--border)',
+                  display: 'inline-block',
+                }}
+              />
               {alt && (
-                <figcaption style={{
-                  marginTop: '0.6rem', fontSize: '0.82rem',
-                  color: 'var(--text-tertiary)', fontStyle: 'italic',
+                <span style={{
+                  display: 'block',
+                  marginTop: '0.6rem',
+                  fontSize: '0.82rem',
+                  color: 'var(--text-tertiary)',
+                  fontStyle: 'italic',
                 }}>
                   {alt}
-                </figcaption>
+                </span>
               )}
-            </figure>
+            </span>
           ),
 
-          // ── Strong / Em ──────────────────────────────────────────────
+          // ── Strong / Em ──────────────────────────────────────────────────
           strong: ({ children }) => (
             <strong style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{children}</strong>
           ),

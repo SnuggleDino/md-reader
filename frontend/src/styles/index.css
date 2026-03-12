@@ -60,7 +60,7 @@ body {
   overflow: hidden;
 }
 
-/* ─── Code tag reset (Browser-Styles entfernen) ────────────────── */
+/* ─── Code tag reset ────────────────── */
 code {
   font-family: var(--font-mono) !important;
   background: transparent !important;
@@ -315,7 +315,7 @@ code {
   border: 1px solid var(--border);
 }
 
-/* Sektor-Heading (spezifisch für dieses Projekt) */
+/* Sektor-Heading */
 .md-sektor-block {
   margin: 2.5rem 0 1.5rem;
   padding: 1rem 1.25rem;

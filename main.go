@@ -25,7 +25,6 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		// Dunkler Hintergrund — verhindert weißes Aufblitzen beim Start
 		BackgroundColour: &options.RGBA{R: 15, G: 15, B: 14, A: 255},
 		OnStartup:        app.startup,
 		Bind: []interface{}{

@@ -52,7 +52,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ markdownContent, onTo
     setTocItems(items);
   }, [markdownContent]);
 
-  // Aktiven Abschnitt per IntersectionObserver tracken
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
     observerRef.current = new IntersectionObserver(

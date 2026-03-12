@@ -46,7 +46,7 @@
 
 ## Screenshots
 
-
+![Screenshot](screenshots/dark-mode.png)
 
 ---
 

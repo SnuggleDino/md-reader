@@ -35,7 +35,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ markdownContent, onTo
   const observerRef = useRef<IntersectionObserver | null>(null);
   const tt = toc18n[lang];
 
-  // TOC aus Markdown parsen
   useEffect(() => {
     const headers = markdownContent.match(/^(#{1,4})\s+(.+?)(?=\s*$)/gm);
     if (!headers) { setTocItems([]); return; }

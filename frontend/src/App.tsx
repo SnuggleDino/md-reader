@@ -44,7 +44,7 @@ const i18n: Record<Lang, Record<string, string>> = {
     readingTime: 'Min. Lesezeit', clearRecent: 'Verlauf löschen',
     welcomeTitle: 'Willkommen beim MD-Reader', welcomeSub: 'Dein schneller, sauberer Markdown-Viewer',
     welcomeHint: 'Öffne eine Datei über den Button, per Drag & Drop oder Doppelklick aus dem Explorer.',
-    settings: 'Einstellungen',
+    settings: 'Einstellungen', emptyTabHint: 'Datei öffnen oder hierher ziehen',
   },
   en: {
     openFile: 'Open file', sidebarToggle: 'Sidebar',
@@ -59,7 +59,7 @@ const i18n: Record<Lang, Record<string, string>> = {
     readingTime: 'min read', clearRecent: 'Clear history',
     welcomeTitle: 'Welcome to MD-Reader', welcomeSub: 'Your fast, clean Markdown viewer',
     welcomeHint: 'Open a file via the button, drag & drop, or double-click from Explorer.',
-    settings: 'Settings',
+    settings: 'Settings', emptyTabHint: 'Open a file or drag it here',
   },
 };
 
@@ -86,7 +86,8 @@ const TabBar: React.FC<{
   onClose: (i: number) => void;
   onSettingsClick: () => void;
   settingsLabel: string;
-}> = React.memo(({ tabs, activeIndex, showSettings, onSelect, onClose, onSettingsClick, settingsLabel }) => {
+  emptyHint: string;
+}> = React.memo(({ tabs, activeIndex, showSettings, onSelect, onClose, onSettingsClick, settingsLabel, emptyHint }) => {
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     display: 'flex', alignItems: 'center', gap: '6px',
@@ -116,6 +117,14 @@ const TabBar: React.FC<{
         flex: 1, height: '100%',
         scrollbarWidth: 'none',
       }}>
+        {tabs.length === 0 && (
+          <div style={{
+            padding: '0 16px', fontSize: '11.5px', color: 'var(--text-tertiary)',
+            alignSelf: 'center', userSelect: 'none', opacity: 0.5, whiteSpace: 'nowrap',
+          }}>
+            {emptyHint}
+          </div>
+        )}
         {tabs.map((tab, i) => {
           const active = i === activeIndex && !showSettings;
           return (
@@ -255,7 +264,7 @@ const App: React.FC = () => {
   const [wailsReady, setWailsReady]   = useState<boolean>(false);
   const [error, setError]             = useState<string | null>(null);
   const [searchTerm, setSearchTerm]   = useState<string>('');
-  const [showSidebar, setShowSidebar] = useState<boolean>(true);
+  const [showSidebar, setShowSidebar] = useState<boolean>(() => settings.tocOpenByDefault);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('md-reader-lang') as Lang) || 'de');
   const [fontSize, setFontSize] = useState<number>(() => Number(localStorage.getItem('md-reader-fontsize') || '16'));
@@ -476,7 +485,7 @@ const App: React.FC = () => {
       )}
 
       {/* ── Header ───────────────────────────────────────── */}
-      <header style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '0 14px', height: '48px', flexShrink: 0, background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', zIndex: 20, userSelect: 'none', marginTop: '2px' }}>
+      <header style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '0 14px', height: settings.compactHeader ? '36px' : '48px', flexShrink: 0, background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', zIndex: 20, userSelect: 'none', marginTop: '2px', transition: 'height .2s ease' }}>
 
         {/* Left */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
@@ -535,6 +544,22 @@ const App: React.FC = () => {
             ))}
           </div>
 
+          <button
+            onClick={() => setShowSettings(s => !s)}
+            title={`${t('settings')} (Ctrl+,)`}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '5px 9px', borderRadius: '8px', border: 'none', gap: '5px',
+              background: showSettings ? 'var(--accent-soft)' : 'var(--bg-subtle)',
+              color: showSettings ? 'var(--accent)' : 'var(--text-tertiary)',
+              cursor: 'pointer', transition: 'all .15s', flexShrink: 0,
+            }}
+            onMouseEnter={e => { if (!showSettings) { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
+            onMouseLeave={e => { if (!showSettings) { e.currentTarget.style.background = 'var(--bg-subtle)'; e.currentTarget.style.color = 'var(--text-tertiary)'; } }}
+          >
+            <Settings size={15} />
+          </button>
+
           <div style={{ display: 'flex', background: 'var(--bg-subtle)', borderRadius: '8px', padding: '2px', gap: '1px' }}>
             {(['de', 'en'] as Lang[]).map(code => (
               <button key={code} onClick={() => setLang(code)} style={{ padding: '4px 8px', borderRadius: '6px', border: 'none', background: lang === code ? 'var(--bg-hover)' : 'transparent', color: lang === code ? 'var(--accent)' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: '11px', fontWeight: lang === code ? 700 : 400, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all .15s' }}>{code}</button>
@@ -552,6 +577,7 @@ const App: React.FC = () => {
         onClose={closeTab}
         onSettingsClick={() => setShowSettings(s => !s)}
         settingsLabel={t('settings')}
+        emptyHint={t('emptyTabHint')}
       />
 
       {/* ── Body ─────────────────────────────────────────── */}
@@ -567,7 +593,7 @@ const App: React.FC = () => {
           ref={contentRef}
           onScroll={saveScrollForActive}
           className="custom-scrollbar"
-          style={{ flex: 1, overflowY: 'auto', background: 'var(--bg-base)', padding: '0 0 4rem' }}
+          style={{ flex: 1, overflowY: 'auto', background: 'var(--bg-base)', padding: showSettings ? '0' : '0 0 4rem' }}
         >
           {/* Settings page replaces content area */}
           {showSettings ? (

@@ -36,11 +36,12 @@
 
 ### UI & Customization
 - **Dynamic Table of Contents** — auto-generated sidebar from your document headings, with active section tracking via IntersectionObserver
-- **Sector blocks** — headings containing "Sektor:" are rendered as visually distinct section cards
+- **Sector blocks** — headings containing "Sektor:" are rendered as visually distinct section cards (toggleable)
 - **File pill** in the header showing the currently open filename, with a one-click close button
-- **Dark mode** (default) and system-preference mode
+- **Dark mode** — always-on dark theme optimized for readability
 - **Language switcher** — full DE / EN interface localization (all UI strings translated)
 - **Search bar** — Ctrl+F focuses the search input instantly
+- **Settings panel** — 7-section settings panel (Appearance, Typography, Layout, Reading, Interface, Shortcuts, About)
 
 ---
 
@@ -137,7 +138,11 @@ Switch between **DE** and **EN** using the language buttons in the top-right cor
 | Shortcut | Action |
 | :--- | :--- |
 | `Ctrl + F` | Focus the search bar |
-| `Escape` | Clear search and unfocus |
+| `Ctrl + ,` | Open / close settings |
+| `Ctrl + +` | Increase font size |
+| `Ctrl + -` | Decrease font size |
+| `Ctrl + 0` | Reset zoom |
+| `Escape` | Clear search / close settings |
 
 ---
 
@@ -196,7 +201,7 @@ Contributions, issues and feature requests are welcome.
 
 ## License
 
-This project is currently unlicensed. Add a `LICENSE` file if you plan to distribute it publicly.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 

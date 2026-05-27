@@ -132,7 +132,9 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
   const { settings } = useSettings();
 
   // Derived from settings — memoized so they don't recreate components object
-  const codeBg = settings.codeBackground;
+  const codeBg       = settings.codeBackground;
+  const codeFontSize = settings.codeFontSize;
+  const sektorBlocks = settings.sektorBlocks;
   const maxWidthMap = { narrow: '56rem', default: '64rem', wide: '80rem', full: '100%' } as const;
   const maxWidth = maxWidthMap[settings.contentMaxWidth] ?? '64rem';
 
@@ -169,7 +171,7 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
     h2: ({ children }: any) => <h2 id={generateId(children)} className="md-prose">{hl(children)}</h2>,
     h3: ({ children }: any) => {
       const id = generateId(children);
-      if (String(children).toLowerCase().includes('sektor')) {
+      if (sektorBlocks && String(children).toLowerCase().includes('sektor')) {
         return (
           <div id={id} className="md-sektor-block">
             <h3>{String(children).replace(/sektor:?\s*/i, '')}</h3>
@@ -203,7 +205,7 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
               style={oneDark}
               language={lang}
               PreTag="div"
-              customStyle={{ margin: 0, padding: '1.25rem', background: codeBg, fontSize: '13.5px', lineHeight: '1.65' }}
+              customStyle={{ margin: 0, padding: '1.25rem', background: codeBg, fontSize: `${codeFontSize}px`, lineHeight: '1.65' }}
               codeTagProps={{ style: { fontFamily: 'var(--font-mono)' } }}
             >
               {codeString}
@@ -256,7 +258,7 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
     em:     ({ children }: any) => <em style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>{children}</em>,
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hl, codeBg, onLinkClick]);
+  }), [hl, codeBg, codeFontSize, sektorBlocks, onLinkClick]);
 
   return (
     <div

@@ -22,26 +22,33 @@
 ## Features
 
 ### Core
-- **Open files** via file dialog button, drag & drop, or double-click directly from Windows Explorer
-- **Markdown rendering** with full [GFM](https://github.github.com/gfm/) support (tables, strikethrough, task lists, etc.)
-- **Syntax highlighting** for code blocks (100+ languages via Prism)
-- **Inline code** rendered cleanly without visual artifacts
+- **Open files** via file dialog, drag & drop, or double-click from Windows Explorer
+- **Tab bar** — open multiple files simultaneously, switch between them with a click or keyboard
+- **Recently opened files** — home screen lists your last 8 files for quick access
+- **Markdown rendering** with full [GFM](https://github.github.com/gfm/) support (tables, strikethrough, task lists, fenced code, etc.)
+- **Syntax highlighting** for code blocks (100+ languages via Prism, One Dark theme)
 - **Copy button** on every code block
+- **Image lightbox** — click any image to enlarge it with backdrop blur; Esc or click outside to close
+- **Auto-reload** — polls the current file every 3 s and reloads automatically when the content changes
 
 ### Navigation
-- **Browser-like history** — navigate back and forward between opened files
-- **Scroll position memory** — returning to a file restores your exact scroll position
-- **Relative `.md` links** — clicking a link to another `.md` file loads it directly in the app
-- **External link protection** — a confirmation modal opens before leaving the app to a browser URL
+- **Table of Contents** — auto-generated sidebar from h2–h4 headings, active section tracked in real time via scroll listener
+- **Quick Jump (Ctrl+K)** — fuzzy-search overlay over all document sections; keyboard-navigable with ↑↓ and Enter
+- **Relative `.md` links** — clicking a link to another `.md` file opens it directly in a new tab
+- **External link protection** — confirmation dialog before opening a URL in the browser
+- **Scroll position memory** — switching tabs or reopening files restores the exact scroll position
+- **Copy heading anchor** — hover over any heading to reveal a link icon; click to copy `#heading-id` to clipboard
+- **Scroll-to-top button** — appears after scrolling 200 px, one click returns to the top
 
-### UI & Customization
-- **Dynamic Table of Contents** — auto-generated sidebar from your document headings, with active section tracking via IntersectionObserver
-- **Sector blocks** — headings containing "Sektor:" are rendered as visually distinct section cards (toggleable)
-- **File pill** in the header showing the currently open filename, with a one-click close button
-- **Dark mode** — always-on dark theme optimized for readability
-- **Language switcher** — full DE / EN interface localization (all UI strings translated)
-- **Search bar** — Ctrl+F focuses the search input instantly
-- **Settings panel** — 7-section settings panel (Appearance, Typography, Layout, Reading, Interface, Shortcuts, About)
+### UI & Layout
+- **Focus mode (F11)** — hides header and tab bar, leaving only the content; exit button in the top-right corner
+- **Current heading strip** — slim bar between tab bar and content showing the active section title
+- **Draggable sidebar** — resize the TOC panel by dragging the edge (160–500 px)
+- **Sector blocks** — headings matching `Sector:` / `Sektor:` are rendered as visually distinct section cards (toggleable)
+- **Dark theme** — always-on dark interface optimized for long reading sessions
+- **Language switcher** — full DE / EN interface localization; setting persists across sessions
+- **Search & highlight** — Ctrl+F focuses the search bar; all matches are highlighted inline
+- **Settings panel** — 7 tabs: Appearance, Typography, Layout, Reading, Interface, Shortcuts, About
 
 ---
 
@@ -69,7 +76,7 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/SnuggleDino/md-reader.git
+git clone https://github.com/Refreryo/md-reader.git
 cd md-reader
 ```
 
@@ -103,7 +110,7 @@ wails build
 
 The compiled binary will be placed in `build/bin/MD-Reader.exe`.
 
-> **Tip:** To also generate a Windows installer (NSIS), run `build.bat` if present, or use `wails build --nsis`.
+> **Tip:** To also generate a Windows installer (NSIS), run `wails build --nsis`.
 
 ---
 
@@ -113,23 +120,22 @@ The compiled binary will be placed in `build/bin/MD-Reader.exe`.
 
 | Method | How |
 | :--- | :--- |
-| File dialog | Click **"Open file"** in the header |
+| File dialog | Click **"Open file"** in the header or press `Ctrl+O` |
 | Drag & Drop | Drag any `.md` file onto the app window |
-| CLI / Explorer | Double-click a `.md` file associated with MD-Reader |
+| Explorer | Double-click a `.md` file associated with MD-Reader |
+| Example file | Click **"Open example"** on the home screen |
 
-### Navigating between files
+### Tabs
 
-- Click any `.md` link inside a document — it loads directly without leaving the app
-- Use the **← →** buttons in the header to navigate your file history
-- Click the **✕** on the file pill to close the current document
+Multiple files can be open at the same time. Each file gets its own tab. Click a tab to switch, click the × to close it. `Ctrl+Tab` and `Ctrl+Shift+Tab` cycle through open tabs.
 
-### Sidebar
+### Table of Contents
 
-Click the **☰** button to toggle the Table of Contents. It lists all headings from the current document and highlights the section currently in view. Click any entry to scroll to it.
+Click the **☰** button to toggle the sidebar TOC. It lists all h2–h4 headings from the current document and highlights the section in view as you scroll. Click any entry to smooth-scroll to that heading. Drag the sidebar edge to resize it.
 
-### Language
+### Quick Jump
 
-Switch between **DE** and **EN** using the language buttons in the top-right corner. The setting is saved and restored on next launch.
+Press `Ctrl+K` to open the Quick Jump overlay. Start typing to filter all sections by name, use ↑↓ to navigate the list, and press Enter to jump. Press Esc to close without navigating.
 
 ---
 
@@ -137,12 +143,19 @@ Switch between **DE** and **EN** using the language buttons in the top-right cor
 
 | Shortcut | Action |
 | :--- | :--- |
-| `Ctrl + F` | Focus the search bar |
-| `Ctrl + ,` | Open / close settings |
-| `Ctrl + +` | Increase font size |
-| `Ctrl + -` | Decrease font size |
-| `Ctrl + 0` | Reset zoom |
-| `Escape` | Clear search / close settings |
+| `Ctrl+O` | Open file dialog |
+| `Ctrl+K` | Open Quick Jump |
+| `Ctrl+F` | Focus search bar |
+| `Ctrl+,` | Open / close settings |
+| `Ctrl+Tab` | Next tab |
+| `Ctrl+Shift+Tab` | Previous tab |
+| `Ctrl++` | Zoom in |
+| `Ctrl+-` | Zoom out |
+| `Ctrl+0` | Reset zoom |
+| `F11` | Toggle focus mode |
+| `Alt+Home` | Go to home screen |
+| `Alt+↑` | Scroll to top |
+| `Esc` | Close panel / clear search |
 
 ---
 
@@ -151,20 +164,23 @@ Switch between **DE** and **EN** using the language buttons in the top-right cor
 ```
 md-reader/
 ├── app.go                  # Go backend — file loading, dialog, external links
-├── main.go                 # Wails app entry point (window size, options)
+├── main.go                 # Wails entry point (window size, options)
 ├── wails.json              # Wails project config
 ├── go.mod / go.sum         # Go module files
-├── example.md              # Sample Markdown file for testing
+├── example.md              # Sample Markdown file bundled with the app
 ├── build/
 │   └── windows/            # Windows icon and manifest
 └── frontend/
     ├── src/
-    │   ├── App.tsx          # Main React component — layout, state, i18n
+    │   ├── App.tsx                        # Main component — tabs, layout, shortcuts, state
+    │   ├── context/
+    │   │   └── SettingsContext.tsx         # Global settings state + persistence
     │   ├── components/
-    │   │   ├── MarkdownViewer.tsx    # Markdown renderer with syntax highlighting
-    │   │   └── TableOfContents.tsx  # Auto-generated sidebar TOC
+    │   │   ├── MarkdownViewer.tsx          # Markdown renderer, syntax highlighting, lightbox
+    │   │   ├── TableOfContents.tsx         # Sidebar TOC with scroll tracking
+    │   │   └── SettingsPanel.tsx           # 7-tab settings overlay
     │   └── styles/
-    │       └── index.css    # CSS design tokens (dark mode, typography, layout)
+    │       └── index.css                   # CSS design tokens (dark theme, typography)
     ├── tailwind.config.js
     └── vite.config.ts
 ```

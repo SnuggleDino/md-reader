@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, ImageOff } from 'lucide-react';
+import { Copy, Check, ImageOff, X, Link2 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 interface MarkdownViewerProps {
@@ -124,8 +124,61 @@ function highlightChildren(children: React.ReactNode, term: string): React.React
   );
 }
 
-const generateId = (children: any): string =>
-  String(children).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// ── Anchor Heading ────────────────────────────────────────
+const AnchorHeading: React.FC<{
+  tag: 'h1' | 'h2' | 'h3' | 'h4';
+  id: string;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ tag: Tag, id, className, children }) => {
+  const [hover, setHover] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(`#${id}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }, [id]);
+
+  return (
+    <Tag
+      id={id}
+      className={className}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <span>{children}</span>
+        <button
+          onClick={handleCopy}
+          title={`Copy #${id}`}
+          style={{
+            flexShrink: 0, display: 'inline-flex', alignItems: 'center',
+            background: 'transparent', border: 'none',
+            cursor: 'pointer', padding: '2px 4px',
+            color: copied ? 'var(--success)' : 'var(--text-tertiary)',
+            opacity: hover ? 1 : 0,
+            transition: 'opacity .12s, color .15s',
+            borderRadius: '4px',
+          }}
+        >
+          {copied ? <Check size={12} /> : <Link2 size={12} />}
+        </button>
+      </span>
+    </Tag>
+  );
+};
+
+// ── Heading text helper (used only for sector detection) ──
+function extractHeadingText(children: React.ReactNode): string {
+  if (typeof children === 'string') return children;
+  if (Array.isArray(children)) return (children as React.ReactNode[]).map(extractHeadingText).join('');
+  if (React.isValidElement(children)) return extractHeadingText((children.props as any).children);
+  return '';
+}
 
 // ── Main Viewer ───────────────────────────────────────────
 const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, searchTerm = '' }) => {
@@ -137,6 +190,40 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
   const sektorBlocks = settings.sektorBlocks;
   const maxWidthMap = { narrow: '56rem', default: '64rem', wide: '80rem', full: '100%' } as const;
   const maxWidth = maxWidthMap[settings.contentMaxWidth] ?? '64rem';
+
+  // Map source line number → heading ID. Built from raw markdown (tracking code-fence state so
+  // headings inside code blocks are excluded). React-markdown passes node.position.start.line,
+  // so lookups are idempotent — no shared mutable counter during render (avoids Strict Mode issues).
+  const headingIdsByLine = useMemo(() => {
+    const result = new Map<number, string>();
+    const counter = new Map<string, number>();
+    const lines = content.split('\n');
+    let inCodeBlock = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trimStart().startsWith('```')) { inCodeBlock = !inCodeBlock; continue; }
+      if (inCodeBlock) continue;
+      const m = line.match(/^(#{1,4})\s+(.+)$/);
+      if (!m) continue;
+      const title = m[2].trim();
+      const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const count = counter.get(base) || 0;
+      counter.set(base, count + 1);
+      result.set(i + 1, count === 0 ? base : `${base}-${count + 1}`);
+    }
+    return result;
+  }, [content]);
+
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  const closeLightbox = useCallback(() => setLightbox(null), []);
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLightbox(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox, closeLightbox]);
 
   // Scroll to first search match
   useEffect(() => {
@@ -167,20 +254,21 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
     ),
 
     // ── Headings ──────────────────────────────────────
-    h1: ({ children }: any) => <h1 id={generateId(children)} className="md-prose">{hl(children)}</h1>,
-    h2: ({ children }: any) => <h2 id={generateId(children)} className="md-prose">{hl(children)}</h2>,
-    h3: ({ children }: any) => {
-      const id = generateId(children);
-      if (sektorBlocks && String(children).toLowerCase().includes('sektor')) {
+    h1: ({ node, children }: any) => <AnchorHeading tag="h1" id={headingIdsByLine.get(node?.position?.start?.line) ?? ''} className="md-prose">{hl(children)}</AnchorHeading>,
+    h2: ({ node, children }: any) => <AnchorHeading tag="h2" id={headingIdsByLine.get(node?.position?.start?.line) ?? ''} className="md-prose">{hl(children)}</AnchorHeading>,
+    h3: ({ node, children }: any) => {
+      const id = headingIdsByLine.get(node?.position?.start?.line) ?? '';
+      const rawText = extractHeadingText(children);
+      if (sektorBlocks && /^(sektor|sector)\s*:/i.test(rawText)) {
         return (
           <div id={id} className="md-sektor-block">
-            <h3>{String(children).replace(/sektor:?\s*/i, '')}</h3>
+            <h3>{rawText.replace(/^(sektor|sector):?\s*/i, '')}</h3>
           </div>
         );
       }
-      return <h3 id={id} className="md-prose">{hl(children)}</h3>;
+      return <AnchorHeading tag="h3" id={id} className="md-prose">{hl(children)}</AnchorHeading>;
     },
-    h4: ({ children }: any) => <h4 id={generateId(children)} className="md-prose">{hl(children)}</h4>,
+    h4: ({ node, children }: any) => <AnchorHeading tag="h4" id={headingIdsByLine.get(node?.position?.start?.line) ?? ''} className="md-prose">{hl(children)}</AnchorHeading>,
 
     // ── Lists ─────────────────────────────────────────
     ul: ({ children }: any) => <ul className="md-prose">{children}</ul>,
@@ -241,10 +329,15 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
     hr: () => <hr className="md-prose" />,
 
     // ── Images ────────────────────────────────────────
-    // FIX: SafeImage is memoized and never recreated on scroll
     img: ({ src, alt }: any) => (
       <span style={{ display: 'block', margin: '2rem 0', textAlign: 'center' }}>
-        <SafeImage src={src} alt={alt} />
+        <span
+          onClick={() => src && setLightbox({ src, alt: alt || '' })}
+          title={src ? 'Click to enlarge' : undefined}
+          style={{ display: 'inline-block', cursor: src ? 'zoom-in' : 'default', position: 'relative' }}
+        >
+          <SafeImage src={src} alt={alt} />
+        </span>
         {alt && (
           <span style={{ display: 'block', marginTop: '0.6rem', fontSize: '0.82rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
             {alt}
@@ -258,17 +351,69 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onLinkClick, s
     em:     ({ children }: any) => <em style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>{children}</em>,
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [hl, codeBg, codeFontSize, sektorBlocks, onLinkClick]);
+  }), [hl, codeBg, codeFontSize, sektorBlocks, onLinkClick, headingIdsByLine]);
 
   return (
-    <div
-      className="md-prose animate-fade-in"
-      style={{ maxWidth, margin: '0 auto', padding: '2rem 1.5rem 4rem', transition: 'max-width .3s ease' }}
-    >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-        {content}
-      </ReactMarkdown>
-    </div>
+    <>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={closeLightbox}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,.88)', backdropFilter: 'blur(10px)',
+            cursor: 'zoom-out', padding: '2rem',
+          }}
+        >
+          <button
+            onClick={closeLightbox}
+            style={{
+              position: 'absolute', top: '16px', right: '16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '36px', height: '36px', borderRadius: '50%',
+              border: '1px solid rgba(255,255,255,.2)',
+              background: 'rgba(255,255,255,.1)',
+              color: '#fff', cursor: 'pointer', zIndex: 201,
+            }}
+          >
+            <X size={16} />
+          </button>
+          <img
+            src={lightbox.src}
+            alt={lightbox.alt}
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw', maxHeight: '88vh',
+              objectFit: 'contain',
+              borderRadius: '10px',
+              boxShadow: '0 30px 80px rgba(0,0,0,.7)',
+              cursor: 'default',
+            }}
+          />
+          {lightbox.alt && (
+            <span style={{
+              position: 'absolute', bottom: '1.5rem',
+              left: '50%', transform: 'translateX(-50%)',
+              fontSize: '13px', color: 'rgba(255,255,255,.65)',
+              fontStyle: 'italic', whiteSpace: 'nowrap',
+              maxWidth: '80vw', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {lightbox.alt}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div
+        className="md-prose animate-fade-in"
+        style={{ maxWidth, margin: '0 auto', padding: '2rem 1.5rem 4rem', transition: 'max-width .3s ease' }}
+      >
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+          {content}
+        </ReactMarkdown>
+      </div>
+    </>
   );
 };
 

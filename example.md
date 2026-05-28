@@ -1,109 +1,144 @@
-## ENG / ENG - MD Reader Project Documentation
+# MD-Reader — Feature Showcase
 
-Welcome to the extended test document. Here we test the Table of Contents, Dark Mode, and Sector display.
+Welcome to the MD-Reader example file. This document is designed to test every
+feature of the application: table of contents navigation, sector blocks, code
+highlighting, tables, images, and more.
 
-### Sector: Introduction
-The **MD Reader** is a high-performance viewer for Markdown files. It is designed to present information in a structured and visually appealing way.
+---
 
-- **Goal:** Maximum readability.
-- **Technology:** Go + React + Tailwind.
-- **Special Feature:** Sector cards for clear separation.
+## Getting Started
 
-### Sector: Installation
-Installation is done using the Go tooling and NPM for the frontend.
+### Sector: What is MD-Reader?
+MD-Reader is a fast, distraction-free desktop Markdown viewer built with
+**Go**, **Wails v2**, **React 18**, and **TypeScript**. It renders Markdown
+files with a clean dark interface and browser-like tab navigation.
 
-1. Install the Wails CLI
-2. Clone the repository
-3. Run `go mod tidy`
-4. Run `npm install` in the frontend folder
+- Open any `.md` file via the button, drag & drop, or double-click from Explorer
+- Use the sidebar (☰) to navigate sections
+- Search with **Ctrl+F**
+- Zoom with **Ctrl+Plus** / **Ctrl+Minus**
 
-### Sector: Configuration
-Here is an example configuration in JSON:
+### Sector: Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl+F` | Focus search bar |
+| `Ctrl+,` | Open / close settings |
+| `Ctrl++` / `Ctrl+-` | Zoom in / out |
+| `Ctrl+0` | Reset zoom |
+| `F11` | Toggle focus mode |
+| `Alt+Home` | Go to home screen |
+| `Alt+↑` | Scroll to top |
+| `Esc` | Close panel / clear search |
+
+---
+
+## Markdown Features
+
+### Sector: Text Formatting
+
+You can use **bold**, *italic*, ~~strikethrough~~, and `inline code` freely.
+
+> Blockquotes appear with a left accent border. Great for notes, warnings, or
+> quotations from documentation.
+
+Paragraph spacing, line height, and font family are all configurable in
+**Settings → Typography**.
+
+### Sector: Code Blocks
+
+MD-Reader supports syntax highlighting for all major languages.
+
+```typescript
+interface Tab {
+  path: string;
+  content: string;
+  scrollY: number;
+}
+
+function getFileName(path: string): string {
+  return path.split(/[/\\]/).pop() ?? path;
+}
+```
 
 ```json
 {
   "app": "MD-Reader",
-  "version": "1.0.0",
-  "features": [
-    "Drag & Drop",
-    "Dark Mode",
-    "TOC"
-  ]
+  "version": "4.0",
+  "features": ["tabs", "toc", "search", "zoom", "focus-mode"]
 }
 ```
 
-### Sector: Troubleshooting
-If the application does not start, check the following points in the table:
-
-| Problem | Cause | Solution |
-| :--- | :--- | :--- |
-| White screen | Frontend not built | Run `npm run build` |
-| File not loading | Invalid path | Try Drag & Drop again |
-| Dark Mode missing | Tailwind configuration | Check `darkMode: 'class'` |
-
-> "Reading documentation should feel like an experience, not like work."
-
-### Sector: Outlook
-Planned future features:
-
-- PDF export
-- Full-text search
-- Plugin system
-
----
-
-Good luck testing!
-
-## DEU / GER - MD-Reader Projekt-Dokumentation
-
-Willkommen in der erweiterten Testdatei. Hier testen wir das Inhaltsverzeichnis, den Dark Mode und die Sektor-Darstellung.
-
-### Sektor: Einleitung
-Der **MD-Reader** ist ein hochperformanter Viewer für Markdown-Dateien. Er ist darauf optimiert, Informationen strukturiert und ästhetisch ansprechend darzustellen.
-
-- **Ziel:** Maximale Lesbarkeit.
-- **Technik:** Go + React + Tailwind.
-- **Spezialität:** Sektor-Karten für klare Abgrenzung.
-
-### Sektor: Installation
-Die Installation erfolgt über das Go Tooling und NPM für das Frontend.
-
-1. Wails CLI installieren
-2. Repository klonen
-3. `go mod tidy` ausführen
-4. `npm install` im frontend Ordner
-
-### Sektor: Konfiguration
-Hier ist eine Beispiel-Konfiguration in JSON:
-
-```json
-{
-  "app": "MD-Reader",
-  "version": "1.0.0",
-  "features": [
-    "Drag & Drop",
-    "Dark Mode",
-    "TOC"
-  ]
-}
+```bash
+# Build the application
+wails build -platform windows/amd64
 ```
 
-### Sektor: Fehlerbehebung
-Falls die App nicht startet, prüfe bitte folgende Punkte in der Tabelle:
+The code font size, background color, and border radius are all adjustable
+in **Settings → Appearance** and **Settings → Typography**.
 
-| Problem | Ursache | Lösung |
-| :--- | :--- | :--- |
-| Weißer Bildschirm | Frontend nicht gebaut | `npm run build` |
-| Datei lädt nicht | Pfad ungültig | Drag & Drop erneut versuchen |
-| Dark Mode fehlt | Tailwind Config | `darkMode: 'class'` prüfen |
+### Sector: Tables
 
-> "Das Lesen von Dokumentationen sollte sich wie ein Erlebnis anfühlen, nicht wie Arbeit."
+Tables render with full GFM support and hover highlighting.
 
-### Sektor: Ausblick
-In Zukunft planen wir:
-- PDF Export
-- Volltextsuche
-- Plugin-System
+| Feature | Status | Since |
+| :--- | :---: | ---: |
+| Tab bar | ✅ | Commit #1 |
+| Table of contents | ✅ | Commit #1 |
+| Search & highlight | ✅ | Commit #2 |
+| Settings panel (7 tabs) | ✅ | Commit #3 |
+| Focus mode | ✅ | Commit #4 |
+| Image lightbox | ✅ | Commit #4 |
+| Auto-reload | ✅ | Commit #4 |
 
 ---
-Viel Erfolg beim Testen!
+
+## Navigation & Layout
+
+### Sector: Table of Contents
+The sidebar TOC is generated from all **h2** and **h3** headings in the file.
+It tracks your scroll position in real time and highlights the active section.
+
+- Click any entry to smooth-scroll to that heading
+- The `#` / `##` / `###` prefix shows the heading level
+- Child sections show a connecting border line on the left
+- The active entry glows in the accent color
+
+Tip: toggle the TOC open by default under **Settings → Reading**.
+
+### Sector: Focus Mode
+Press **F11** to enter focus mode. Header and tab bar disappear — only the
+content remains. An exit button appears in the top-right corner.
+
+Press **Esc** or **F11** again to exit.
+
+### Sector: Recent Files
+The home screen shows your last 8 opened files. Click any entry to reopen it
+instantly. Use the trash icon to clear the history.
+
+---
+
+## Settings
+
+### Sector: Appearance
+Customize accent color, glow effects, search highlight color, code background,
+and border radius under **Settings → Appearance**.
+
+Ten accent color presets are included. A color picker allows any custom hex
+value. Changes apply instantly with no restart required.
+
+### Sector: Auto-Reload
+When enabled (**Settings → Interface → Auto-reload**), MD-Reader polls the
+current file every 3 seconds and reloads it automatically if the content has
+changed. Useful when editing and viewing side by side.
+
+---
+
+## Short Section Test
+
+This section intentionally has very little content to verify that the TOC
+correctly highlights it when you scroll to the bottom of the document.
+
+### Sector: End of Document
+If you can see this section highlighted in the sidebar, the near-bottom
+detection is working correctly.

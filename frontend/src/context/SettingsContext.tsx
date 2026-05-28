@@ -27,6 +27,7 @@ export interface AppSettings {
   // Interface
   compactHeader:      boolean;
   animationsEnabled:  boolean;
+  autoReload:         boolean;
 }
 
 const DEFAULTS: AppSettings = {
@@ -50,6 +51,7 @@ const DEFAULTS: AppSettings = {
   sektorBlocks:       true,
   compactHeader:      false,
   animationsEnabled:  true,
+  autoReload:         false,
 };
 
 const STORAGE_KEY = 'md-reader-settings';

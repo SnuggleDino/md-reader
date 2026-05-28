@@ -70,12 +70,14 @@ const L: Record<Lang, Record<string, string>> = {
     tocOpenByDefault: 'TOC standardmäßig offen',
     tocOpenByDefaultDesc: 'Sidebar beim Start automatisch einblenden.',
     sektorBlocks: 'Sektor-Blöcke',
-    sektorBlocksDesc: 'Überschriften mit "Sektor:" als Karten rendern.',
+    sektorBlocksDesc: 'Überschriften mit "Sektor:" oder "Sector:" als Karten rendern.',
 
     compactHeader: 'Kompakter Header',
     compactHeaderDesc: 'Reduziert die Header-Höhe auf 36px.',
     animations: 'Animationen',
     animationsDesc: 'Sanfte Übergänge und Einblend-Effekte.',
+    autoReload: 'Auto-Reload',
+    autoReloadDesc: 'Datei automatisch neu laden, wenn sie extern geändert wird.',
 
     subtle: 'Subtil', medium: 'Mittel', strong: 'Stark',
     on: 'An', off: 'Aus',
@@ -90,6 +92,12 @@ const L: Record<Lang, Record<string, string>> = {
     shortcutZoomReset: 'Zoom zurücksetzen',
     shortcutEscape: 'Schließen / Suche leeren',
     shortcutOpenFile: 'Datei-Dialog öffnen',
+    shortcutFocus: 'Fokus-Modus ein/aus',
+    shortcutHome: 'Startseite anzeigen',
+    shortcutScrollTop: 'Zum Seitenanfang',
+    shortcutJump: 'Quick-Jump öffnen',
+    shortcutNextTab: 'Nächster Tab',
+    shortcutPrevTab: 'Vorheriger Tab',
 
     aboutVersion: 'Version',
     aboutBuiltWith: 'Entwickelt mit',
@@ -157,12 +165,14 @@ const L: Record<Lang, Record<string, string>> = {
     tocOpenByDefault: 'TOC open by default',
     tocOpenByDefaultDesc: 'Auto-show sidebar on launch.',
     sektorBlocks: 'Sector blocks',
-    sektorBlocksDesc: 'Render headings with "Sektor:" as cards.',
+    sektorBlocksDesc: 'Render headings with "Sector:" or "Sektor:" as cards.',
 
     compactHeader: 'Compact header',
     compactHeaderDesc: 'Reduces the header height to 36px.',
     animations: 'Animations',
     animationsDesc: 'Smooth transitions and fade effects.',
+    autoReload: 'Auto-reload',
+    autoReloadDesc: 'Automatically reload the file when it is changed externally.',
 
     subtle: 'Subtle', medium: 'Medium', strong: 'Strong',
     on: 'On', off: 'Off',
@@ -177,6 +187,12 @@ const L: Record<Lang, Record<string, string>> = {
     shortcutZoomReset: 'Reset zoom',
     shortcutEscape: 'Close / clear search',
     shortcutOpenFile: 'Open file dialog',
+    shortcutFocus: 'Toggle focus mode',
+    shortcutHome: 'Go to home screen',
+    shortcutScrollTop: 'Scroll to top',
+    shortcutJump: 'Open quick jump',
+    shortcutNextTab: 'Next tab',
+    shortcutPrevTab: 'Previous tab',
 
     aboutVersion: 'Version',
     aboutBuiltWith: 'Built with',
@@ -769,6 +785,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, lang }) => {
                 <Toggle value={settings.animationsEnabled} onChange={v => set('animationsEnabled', v)} />
               </SettingRow>
             </Card>
+
+            <SectionLabel label="Files" />
+            <Card>
+              <SettingRow label={lx.autoReload} desc={lx.autoReloadDesc} last>
+                <Toggle value={settings.autoReload} onChange={v => set('autoReload', v)} />
+              </SettingRow>
+            </Card>
           </>
         )}
 
@@ -785,6 +808,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, lang }) => {
                 { keys: ['Ctrl', '-'],          desc: lx.shortcutZoomOut    },
                 { keys: ['Ctrl', '0'],          desc: lx.shortcutZoomReset  },
                 { keys: ['Escape'],             desc: lx.shortcutEscape     },
+                { keys: ['Ctrl', 'O'],              desc: lx.shortcutOpenFile  },
+                { keys: ['Ctrl', 'K'],              desc: lx.shortcutJump      },
+                { keys: ['Ctrl', 'Tab'],            desc: lx.shortcutNextTab   },
+                { keys: ['Ctrl', 'Shift', 'Tab'],   desc: lx.shortcutPrevTab   },
+                { keys: ['F11'],                    desc: lx.shortcutFocus     },
+                { keys: ['Alt', 'Home'],            desc: lx.shortcutHome      },
+                { keys: ['Alt', '↑'],               desc: lx.shortcutScrollTop },
               ] as { keys: string[]; desc: string }[]).map(({ keys, desc }, i, arr) => (
                 <div key={desc} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -837,7 +867,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, lang }) => {
               </div>
               <div>
                 <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '3px' }}>MD-Reader</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>{lx.aboutVersion} 2.0 · Commit #3</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>{lx.aboutVersion} 4.0 · Commit #4</div>
               </div>
             </div>
 
@@ -861,8 +891,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, lang }) => {
               </div>
               <div style={{ padding: '14px 20px' }}>
                 <a
-                  href="https://github.com/SnuggleDino/md-reader"
-                  onClick={e => e.preventDefault()}
+                  href="https://github.com/Refreryo/md-reader"
+                  onClick={e => { e.preventDefault(); window.go?.main?.App?.OpenExternalLink('https://github.com/Refreryo/md-reader'); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: '14px', fontWeight: 500, textDecoration: 'none', cursor: 'pointer' }}
                 >
                   <ExternalLink size={14} />
